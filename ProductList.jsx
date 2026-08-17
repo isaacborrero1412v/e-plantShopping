@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from './CartSlice';
 import CartItem from './CartItem';
+import './ProductList.css';
 
 function ProductList() {
   const [showCart, setShowCart] = useState(false);
+  const [addedNodes, setAddedNodes] = useState({});
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
 
@@ -46,31 +48,46 @@ function ProductList() {
     }
   ];
 
+  const handleAddToCart = (plant) => {
+    dispatch(addItem(plant));
+    setAddedNodes((prevState) => ({
+      ...prevState,
+      [plant.name]: true,
+    }));
+  };
+
   return (
     <div>
       <nav className="navbar">
-        <h3>Paradise Nursery</h3>
-        <div>
-          <button onClick={() => setShowCart(false)}>Plants</button>
-          <button onClick={() => setShowCart(true)}>Cart ({totalQuantity})</button>
+        <a href="/" className="logo">Paradise Nursery</a>
+        <div className="nav-links">
+          <a href="#" onClick={(e) => { e.preventDefault(); setShowCart(false); }}>Home</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); setShowCart(false); }}>Plants</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); setShowCart(true); }}>
+            Cart ({totalQuantity})
+          </a>
         </div>
       </nav>
 
       {!showCart ? (
         <div className="product-grid">
           {plantsArray.map((category, idx) => (
-            <div key={idx}>
+            <div key={idx} className="category-section">
               <h2>{category.category}</h2>
               <div className="plant-list">
                 {category.plants.map((plant, pIdx) => {
-                  const isAdded = cartItems.some(item => item.name === plant.name);
+                  const isAdded = addedNodes[plant.name] || cartItems.some(item => item.name === plant.name);
                   return (
                     <div key={pIdx} className="product-card">
-                      <img src={plant.image} alt={plant.name} width="150" />
-                      <h4>{plant.name}</h4>
+                      <img src={plant.image} alt={plant.name} className="product-image" />
+                      <h3>{plant.name}</h3>
                       <p>{plant.description}</p>
-                      <p>{plant.cost}</p>
-                      <button disabled={isAdded} onClick={() => dispatch(addItem(plant))}>
+                      <p className="product-cost">{plant.cost}</p>
+                      <button 
+                        className="product-button" 
+                        disabled={isAdded} 
+                        onClick={() => handleAddToCart(plant)}
+                      >
                         {isAdded ? "Added to Cart" : "Add to Cart"}
                       </button>
                     </div>
@@ -81,7 +98,7 @@ function ProductList() {
           ))}
         </div>
       ) : (
-        <CartItem onContinueShopping={() => setShowCart(false)} />
+        <CartItem onContinueShopping={(e) => { if(e) e.preventDefault(); setShowCart(false); }} />
       )}
     </div>
   );
