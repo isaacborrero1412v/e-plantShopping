@@ -1,27 +1,33 @@
-import React, { useState } from 'react';
-import ProductList from './ProductList';
-import AboutUs from './AboutUs';
-import './App.css';
+import { createSlice } from '@reduxjs/toolkit';
 
-function App() {
-  const [showProductList, setShowProductList] = useState(false);
+export const CartSlice = createSlice({
+  name: 'cart',
+  initialState: {
+    items: [],
+  },
+  reducers: {
+    addItem: (state, action) => {
+      const { name, image, cost } = action.payload;
+      const existingItem = state.items.find(item => item.name === name);
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        state.items.push({ name, image, cost, quantity: 1 });
+      }
+    },
+    removeItem: (state, action) => {
+      state.items = state.items.filter(item => item.name !== action.payload);
+    },
+    updateQuantity: (state, action) => {
+      const { name, quantity } = action.payload;
+      const itemToUpdate = state.items.find(item => item.name === name);
+      if (itemToUpdate) {
+        itemToUpdate.quantity = quantity;
+      }
+    },
+  },
+});
 
-  return (
-    <div className="app-container">
-      {!showProductList ? (
-        <div className="landing-page">
-          <h1>Paradise Nursery</h1>
-          <p>Where Green Meets Serenity</p>
-          <button className="get-started-button" onClick={() => setShowProductList(true)}>
-            Get Started
-          </button>
-          <AboutUs />
-        </div>
-      ) : (
-        <ProductList />
-      )}
-    </div>
-  );
-}
+export const { addItem, removeItem, updateQuantity } = CartSlice.actions;
 
-export default App;
+export default CartSlice.reducer;
